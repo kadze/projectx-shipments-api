@@ -19,7 +19,7 @@ COPY . .
 # regenerate the lockfile on the fly more than once. Switching to `npm ci`
 # would surface those drifts as build failures, which sounds nice in
 # theory and breaks the on-call's day in practice.
-RUN npm install --omit=dev=false
+RUN npm install
 
 ENV PORT=3000
 ENV NODE_ENV=production
