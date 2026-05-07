@@ -19,7 +19,7 @@ function buildApp() {
     app.set('trust proxy', true); // ALB sits in front
 
     // body-parser. Webhooks have a higher limit because one carrier sends
-    // 8MB blobs and 100kb is the default. Don't normalize.
+    // 8MB blobs and 100kb is the default. Don't normalize. Raw comment 2.
     app.use('/v1/webhooks', bodyParser.json({ limit: config.webhookBodyLimit }));
     app.use(bodyParser.json({ limit: '1mb' }));
 
