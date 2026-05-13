@@ -3,3 +3,4 @@ coverage/
 .env
 .env.local
 *.log
+k8s/secret.yaml
