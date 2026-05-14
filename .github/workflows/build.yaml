@@ -1,0 +1,26 @@
+name: Build and Deploy
+on:
+  push:
+    #branches: [main]
+
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
+
+jobs: 
+  build-deploy:
+    run-on: ubuntu-latest 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: AWS Login
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{vars.AWS_ROLE_ARN}}
+          role-session-name: gha-session
+
+      - name: Test
+        run: aws sts get-caller-identity
