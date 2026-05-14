@@ -9,7 +9,7 @@ permissions:
 
 jobs: 
   build-deploy:
-    run-on: ubuntu-latest 
+    runs-on: ubuntu-latest 
 
     steps:
       - name: Checkout code
