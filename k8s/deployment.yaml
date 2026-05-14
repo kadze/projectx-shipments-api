@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: routebox-shipments-api
-          image: 414866527708.dkr.ecr.us-east-1.amazonaws.com/shipments-api:20d7f6b
+          image: 414866527708.dkr.ecr.us-east-1.amazonaws.com/shipments-api:REPLACE_TAG
           #command: ["/bin/sh", "-c", "sleep 600"] 
           ports:
             - containerPort: 3000

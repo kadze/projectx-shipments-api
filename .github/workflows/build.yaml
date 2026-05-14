@@ -10,8 +10,6 @@ permissions:
 jobs: 
   build-deploy:
     runs-on: ubuntu-latest 
-    env: 
-      IMAGE_TAG: a6c2ddd 
 
     steps:
       - name: Checkout code
@@ -28,12 +26,23 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Get short sha
+        run: 
+          echo "IMAGE_TAG=&{{GITHUB_SHA::7}}" >> $GITHUB_ENV
+
       - name: Build, tag, and push docker image to Amazon ECR
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: shipments-api
         run: |
-          IMAGE_TAG=$(echo ${{ github.sha }} | cut -c1-7)
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker build -t $REGISTRY/$REPOSITORY:${IMAGE_TAG} .
+          docker push $REGISTRY/$REPOSITORY:${IMAGE_TAG}
 
+      - name: Update cubeconfig
+        run:
+          aws eks update-kubeconfig --name routebox-dev
+
+      - name: Deploy to k8s/EKS
+        run: 
+          sed -i "s/REPLACE_TAG/${IMAGE_TAG}/g" k8s/deployment.yaml
+          kubectl apply -f k8s/
