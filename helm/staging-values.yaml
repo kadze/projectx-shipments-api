@@ -1,0 +1,49 @@
+fullname: routebox-shipments-api
+
+replicaCount: 2
+
+image:
+  repository: 414866527708.dkr.ecr.us-east-1.amazonaws.com/shipments-api
+  tag: latest
+  pullPolicy: IfNotPresent
+
+namespace: shipments-api
+
+service:
+  type: ClusterIP
+  port: 3000
+
+config:
+  PORT: "3000"
+  LOG_LEVEL: info
+  AWS_REGION: us-east-1
+  SQS_QUEUE_URL: "https://sqs.us-east-1.amazonaws.com/414866527708/routebox-staging-shipments"
+
+secrets:
+  DATABASE_URL: ""
+  JWT_SIGNING_KEY: ""
+  INTERNAL_API_TOKEN: ""
+
+resources:
+  requests:
+    cpu: 150m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 3000
+  initialDelaySeconds: 10
+  periodSeconds: 15
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: 3000
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  failureThreshold: 3

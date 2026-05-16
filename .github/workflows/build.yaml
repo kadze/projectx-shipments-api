@@ -44,10 +44,9 @@ jobs:
 
       - name: Deploy to k8s/EKS
         run: |
-          sed -i "s/REPLACE_TAG/$IMAGE_TAG/g" k8s/deployment.yaml
-          #
-          kubectl apply -f k8s/configmap.yaml
-          kubectl apply -f k8s/namespace.yaml
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
-          # kubectl apply -f k8s/
+          helm upgrade --install routebox-shipments-api ./helm \
+            --namespace shipments-api \
+            --create-namespace \
+            --values helm/dev-values.yaml \
+            --set image.tag=$IMAGE_TAG \
+            --wait

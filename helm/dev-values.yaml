@@ -1,0 +1,49 @@
+fullname: routebox-shipments-api
+
+replicaCount: 1
+
+image:
+  repository: 414866527708.dkr.ecr.us-east-1.amazonaws.com/shipments-api
+  tag: latest
+  pullPolicy: Always
+
+namespace: shipments-api
+
+service:
+  type: ClusterIP
+  port: 3000
+
+config:
+  PORT: "3000"
+  LOG_LEVEL: debug
+  AWS_REGION: us-east-1
+  SQS_QUEUE_URL: "https://sqs.us-east-1.amazonaws.com/414866527708/routebox-dev-shipments"
+
+secrets:
+  DATABASE_URL: "postgres://routebox_admin:routeboxdbpassword@routebox-dev.cc7k6i4aygn0.us-east-1.rds.amazonaws.com:5432/routebox"
+  JWT_SIGNING_KEY: "dev-jwt-key-not-real"
+  INTERNAL_API_TOKEN: "dev-internal-token-not-real"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 3000
+  initialDelaySeconds: 10
+  periodSeconds: 15
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: 3000
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  failureThreshold: 3
