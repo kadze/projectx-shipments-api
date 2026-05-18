@@ -42,11 +42,19 @@ jobs:
         run: |
           aws eks update-kubeconfig --name routebox-dev
 
-      - name: Deploy to k8s/EKS
+      - name: Deploy to k8s/EKS with Helm
         run: |
+          cat > /tmp/secret-values.yaml << EOF
+          secrets:
+            DATABASE_URL: "${{ secrets.DATABASE_URL }}"
+            JWT_SIGNING_KEY: "${{ secrets.JWT_SIGNING_KEY }}"
+            INTERNAL_API_TOKEN: "${{ secrets.INTERNAL_API_TOKEN }}"
+          EOF
+
           helm upgrade --install routebox-shipments-api ./helm \
             --namespace shipments-api \
             --create-namespace \
             --values helm/dev-values.yaml \
+            --values /tmp/secret-values.yaml \
             --set image.tag=$IMAGE_TAG \
             --wait
