@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: routebox-shipments-config
+  name: {{ .Values.fullname }}-config
   namespace: {{ .Values.namespace }}
 data:
   PORT: {{ .Values.config.PORT | quote }}
