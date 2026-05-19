@@ -3,7 +3,7 @@ fullname: routebox-shipments-api
 replicaCount: 2
 
 image:
-  repository: 414866527708.dkr.ecr.us-east-1.amazonaws.com/shipments-api
+  repository: 374198398764.dkr.ecr.us-east-1.amazonaws.com/shipments-api
   tag: latest
   pullPolicy: IfNotPresent
 
