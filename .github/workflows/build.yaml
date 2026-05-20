@@ -64,3 +64,4 @@ jobs:
             --values /tmp/secret-values.yaml \
             --set image.tag=$IMAGE_TAG \
             --wait
+#
