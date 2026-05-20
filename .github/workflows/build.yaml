@@ -42,9 +42,11 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
-      - name: Update cubeconfig
+      - name: Update kubeconfig
+        env:
+          CLUSTER_NAME: ${{ github.ref == 'refs/heads/main' && 'routebox-prod' || github.ref == 'refs/heads/staging' && 'routebox-staging' || 'routebox-dev' }}
         run: |
-          aws eks update-kubeconfig --name routebox-dev
+          aws eks update-kubeconfig --name $CLUSTER_NAME
 
       - name: Deploy to k8s/EKS with Helm
         run: |
