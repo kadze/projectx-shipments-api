@@ -1,7 +1,9 @@
 name: Build and Deploy
 on:
   push:
-    #branches: [main]
+    branches: 
+      - staging
+      - feature/*
 
 permissions:
   id-token: write   # This is required for requesting the JWT
@@ -9,7 +11,7 @@ permissions:
 
 jobs: 
   build-deploy:
-    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
+    environment: ${{ github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
     runs-on: ubuntu-latest 
 
     steps:

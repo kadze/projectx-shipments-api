@@ -1,0 +1,76 @@
+name: Production Deploy
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  prod-deploy:
+    environment: prod
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: AWS Login
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          role-session-name: gha-session
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registries: "374198398764"
+
+      - name: Set image tags
+        run: |
+          echo "SHA_TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
+          echo "GIT_TAG=${GITHUB_REF_NAME}" >> $GITHUB_ENV
+
+      - name: Retag ECR image with git tag
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: shipments-api
+        run: |
+          docker pull $REGISTRY/$REPOSITORY:$SHA_TAG
+          docker tag $REGISTRY/$REPOSITORY:$SHA_TAG $REGISTRY/$REPOSITORY:$GIT_TAG
+          docker push $REGISTRY/$REPOSITORY:$GIT_TAG
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name routebox-prod
+
+      - name: Create ECR pull secret
+        run: |
+          kubectl create namespace shipments-api --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create secret generic ecr-pull-secret \
+            --from-file=.dockerconfigjson=$HOME/.docker/config.json \
+            --type=kubernetes.io/dockerconfigjson \
+            --namespace=shipments-api \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy to production with Helm
+        run: |
+          cat > /tmp/secret-values.yaml << EOF
+          secrets:
+            DATABASE_URL: "${{ secrets.DATABASE_URL }}"
+            JWT_SIGNING_KEY: "${{ secrets.JWT_SIGNING_KEY }}"
+            INTERNAL_API_TOKEN: "${{ secrets.INTERNAL_API_TOKEN }}"
+          EOF
+
+          helm upgrade --install routebox-shipments-api ./helm \
+            --namespace shipments-api \
+            --create-namespace \
+            --values helm/prod-values.yaml \
+            --values /tmp/secret-values.yaml \
+            --set image.tag=$GIT_TAG \
+            --wait
